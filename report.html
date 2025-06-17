@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="icon" href="img/server_icon.png" type="image/x-icon">
+  <link rel="stylesheet" href="css/report.css">
+  <title>JSPH Server Room Monitoring</title>
+</head>
+<body>
+
+  <!-- Header Section -->
+  <div class="topbar">
+  <div class="header-left">
+    <img src="img/server_icon.png" alt="Server Icon" style="height: 24px; margin-right: 10px;">
+    <span class="header-title">SRM</span>
+  </div>
+
+  <div class="topbar-right">
+    <div class="logoutBtn">
+    <a href="login.html" title="Logout">
+      <button class="icon-button">
+        <i class="fas fa-right-from-bracket"></i>
+      </button>
+    </a>
+  </div>
+  <div class="nav-menu">
+    <a href="monitoring.html">Monitoring</a>
+    <a href="report.html">Report</a>
+    <div class="dropdown">
+                      <button class="dropbtn">Management</button>
+                        <div class="dropdown-content">
+                          <a href="inventory.html">Inventory</a>
+                          <a href="cleaning.html">Cleaning</a>
+                        </div>
+                    </div>
+  </div>
+  </div>
+  </div>
+  <!-- Main Content -->
+  <main>
+    <br>
+    <h2>SERVER ROOM MONITORING REPORT</h2>
+
+<div class="date-controls">
+  <label for="monthSelect"><strong>Month:</strong></label>
+  <select id="monthSelect" name="month">
+    <option value="01">January</option>
+    <option value="02">February</option>
+    <option value="03">March</option>
+    <option value="04">April</option>
+    <option value="05">May</option>
+    <option value="06" selected>June</option>
+    <option value="07">July</option>
+    <option value="08">August</option>
+    <option value="09">September</option>
+    <option value="10">October</option>
+    <option value="11">November</option>
+    <option value="12">December</option>
+  </select>
+
+  <label for="yearSelect"><strong>Year:</strong></label>
+  <select id="yearSelect" name="year">
+    <option value="2024">2024</option>
+    <option value="2025" selected>2025</option>
+    <option value="2026">2026</option>
+  </select>
+
+   <button id="generateBtn">Generate Report</button>
+</div>
+<br>
+<div style="overflow-x:auto;">
+<table border="1" id="statusTable" style="border-collapse: collapse; font-size: 12px; min-width: 1000px;">
+  <thead>
+    <tr>
+      <th rowspan="2">Date</th>
+      <th rowspan="2">Time</th>
+      <th rowspan="2">Temperature</th>
+      <th rowspan="2">Humidity</th>
+
+      <th id="airconHeader">Aircon Units</th>
+      <th id="serverHeader">Server HDD Health</th>
+      <th id="upsHeader">UPS</th>
+      <th id="networkHeader">Network Devices</th>
+      <th id="sdwanHeader">SD-WAN Devices</th>
+      <th colspan="2" id="fireextHeader">Fire Extinguisher</th>
+      <th colspan="2" id="firesupHeader">Fire Suppression System</th>
+      <th colspan="2" id="cleaningHeader">Cleaning</th>
+
+      <th rowspan="2" id="timecheckHeader">Time Checked</th>
+      <th rowspan="2" id="checkedbyHeader">Checked By</th>
+      <th rowspan="2" id="remarksHeader">Remarks</th>
+    </tr>
+    <tr id="unitHeaderRow"></tr>
+  </thead>
+  <tbody></tbody>
+</table>
+</div>
+  </main>
+  <!-- Footer Section -->
+  <footer>
+    &copy; 2025 My Website | All Rights Reserved
+  </footer>
+  <script>
+  const equipmentCategories = ['aircon', 'hdd', 'ups', 'network', 'sdwan'];
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const stored = JSON.parse(localStorage.getItem('monitoringData')) || {};
+    const selectedMonth = document.getElementById("monthSelect").value;
+    const selectedYear = document.getElementById("yearSelect").value;
+
+    const filtered = Object.entries(stored)
+      .filter(([date]) => date.startsWith(`${selectedYear}-${selectedMonth}`))
+      .flatMap(([_, times]) => Object.values(times));
+
+    updateTableHeaders(filtered);
+    generateReport(filtered);
+
+    document.getElementById("generateBtn").addEventListener("click", () => {
+      const month = document.getElementById("monthSelect").value;
+      const year = document.getElementById("yearSelect").value;
+
+      const filtered = Object.entries(stored)
+        .filter(([date]) => date.startsWith(`${year}-${month}`))
+        .flatMap(([_, times]) => Object.values(times));
+
+      updateTableHeaders(filtered);
+      generateReport(filtered);
+    });
+  });
+
+  // Store found keys for dynamic columns so createDataCells aligns properly
+  let dynamicKeysPerCategory = {
+    aircon: [],
+    hdd: [],
+    ups: [],
+    network: [],
+    sdwan: []
+  };
+
+  function updateTableHeaders(data) {
+  // Reset counts & keys
+  dynamicKeysPerCategory = {
+    aircon: [],
+    hdd: [],
+    ups: [],
+    network: [],
+    sdwan: []
+  };
+
+  // Count & collect keys for each category uniquely
+  const categoryKeySets = {
+    aircon: new Set(),
+    hdd: new Set(),
+    ups: new Set(),
+    network: new Set(),
+    sdwan: new Set()
+  };
+
+  data.forEach(entry => {
+    Object.keys(entry).forEach(key => {
+      if (key.startsWith('aircon')) categoryKeySets.aircon.add(key);
+      if (key.startsWith('hdd')) categoryKeySets.hdd.add(key);
+      if (key.startsWith('ups')) categoryKeySets.ups.add(key);
+      if (key.startsWith('network')) categoryKeySets.network.add(key);
+      if (key.startsWith('sdwan')) categoryKeySets.sdwan.add(key);
+    });
+  });
+
+  // Convert sets to arrays and update dynamicKeysPerCategory
+  Object.keys(categoryKeySets).forEach(cat => {
+    dynamicKeysPerCategory[cat] = Array.from(categoryKeySets[cat]).sort();
+  });
+
+  // Update colspan based on counts
+  Object.entries(dynamicKeysPerCategory).forEach(([cat, keys]) => {
+    const colSpan = keys.length || 1;
+    const headerId = {
+      aircon: 'airconHeader',
+      hdd: 'serverHeader',
+      ups: 'upsHeader',
+      network: 'networkHeader',
+      sdwan: 'sdwanHeader'
+    }[cat];
+    document.getElementById(headerId).colSpan = colSpan;
+  });
+
+  // Clear and add subheaders
+  const unitHeaderRow = document.getElementById('unitHeaderRow');
+  unitHeaderRow.innerHTML = '';
+
+  const equipmentData = JSON.parse(localStorage.getItem('equipmentData')) || {
+  aircon: [],
+  hdd: [],
+  ups: [],
+  network: [],
+  sdwan: []
+};
+
+['aircon', 'hdd', 'ups', 'network', 'sdwan'].forEach(prefix => {
+  const keys = dynamicKeysPerCategory[prefix];
+  const names = equipmentData[prefix] || [];
+
+  if (keys.length === 0) {
+    const th = document.createElement('th');
+    th.textContent = '-';
+    unitHeaderRow.appendChild(th);
+  } else {
+    keys.forEach((key, index) => {
+      const th = document.createElement('th');
+
+      // Use actual equipment name if available
+      const label = names[index] || beautifyKey(key);
+      th.textContent = label;
+      unitHeaderRow.appendChild(th);
+    });
+  }
+});
+
+
+  // Fixed subheaders
+  const fixedSubheaders = {
+    fireextHeader: ["Gauge Status (Extinguisher)", "IDEX Check (Extinguisher)"],
+    firesupHeader: ["Gauge Status (Suppression)", "IDEX Check (Suppression)"],
+    cleaningHeader: ["Vacuum", "SS"]
+  };
+  Object.values(fixedSubheaders).flat().forEach(label => {
+    const th = document.createElement('th');
+    th.textContent = label;
+    unitHeaderRow.appendChild(th);
+  });
+
+  // Note: static headers with rowspan=2 remain in static HTML
+}
+
+
+
+  function beautifyKey(key) {
+    if (key === "temp") return "°C";
+    if (key === "humidity") return "%";
+    if (key === "gauge1") return "Gauge Status (Extinguisher)";
+    if (key === "idex1") return "IDEX Check (Extinguisher)";
+    if (key === "gauge2") return "Gauge Status (Suppression)";
+    if (key === "idex2") return "IDEX Check (Suppression)";
+    if (key === "vacuumStatus") return "Vacuum";
+    if (key === "ssStatus") return "SS";
+    if (key === "time") return "Time Checked";
+    if (key === "name") return "Checked By";
+    if (key === "remarks") return "Remarks";
+    return key.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  }
+
+  function createDataCells(entry) {
+  const row = [];
+
+  // Temp & humidity
+  row.push(createCell(entry.temp || ''));
+  row.push(createCell(entry.humidity || ''));
+
+  // For each category, use dynamic keys stored
+  ['aircon', 'hdd', 'ups', 'network', 'sdwan'].forEach(prefix => {
+    const keys = dynamicKeysPerCategory[prefix] || [];
+    keys.forEach(key => {
+      row.push(createCell(entry[key] || ''));
+    });
+  });
+
+  // Fixed fields
+  ['gauge1', 'idex1', 'gauge2', 'idex2', 'vacuumStatus', 'ssStatus', 'time', 'name', 'remarks'].forEach(key => {
+    row.push(createCell(entry[key] || ''));
+  });
+
+  return row;
+}
+
+
+
+
+  function createCell(content) {
+    const td = document.createElement('td');
+    td.textContent = content;
+    return td;
+  }
+
+
+  function generateReport(data) {
+    const equipmentData = JSON.parse(localStorage.getItem('equipmentData')) || {
+  aircon: [],
+  hdd: [],
+  ups: [],
+  network: [],
+  sdwan: []
+};
+
+    const tbody = document.querySelector("#statusTable tbody");
+    tbody.innerHTML = '';
+
+    // Group by date and timePeriod (AM/PM)
+    const grouped = {};
+    data.forEach(entry => {
+      const date = entry.date;
+      const time = entry.timePeriod;
+      if (!grouped[date]) grouped[date] = {};
+      grouped[date][time] = entry;
+    });
+
+    Object.entries(grouped).forEach(([date, times]) => {
+      const am = times.AM;
+      const pm = times.PM;
+
+      if (am && pm) {
+        const rowAM = document.createElement("tr");
+        const dateCell = document.createElement("td");
+        dateCell.textContent = formatDate(date);
+        dateCell.rowSpan = 2;
+        rowAM.appendChild(dateCell);
+        rowAM.appendChild(createCell("AM"));
+        rowAM.append(...createDataCells(am, equipmentData));
+        tbody.appendChild(rowAM);
+
+        const rowPM = document.createElement("tr");
+        rowPM.appendChild(createCell("PM"));
+        rowPM.append(...createDataCells(pm, equipmentData));
+        tbody.appendChild(rowPM);
+      } else {
+        const entry = am || pm;
+        const row = document.createElement("tr");
+        const dateCell = document.createElement("td");
+        dateCell.textContent = formatDate(date);
+        row.appendChild(dateCell);
+        row.appendChild(createCell(entry.timePeriod));
+        row.append(...createDataCells(entry, equipmentData));
+        tbody.appendChild(row);
+      }
+    });
+  }
+
+  function formatDate(dateStr) {
+    const d = new Date(dateStr);
+    return d.getDate().toString().padStart(2, '0');
+  }
+
+</script>
+
+
+    <script>
+        function logout() {
+            alert("Logging out...");
+            window.location.href = "/login"; // Replace with your actual login path
+        }
+    </script>
+
+
+</body>
+</html>

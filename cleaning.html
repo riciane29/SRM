@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+  <link rel="icon" href="img/server_icon.png" type="image/x-icon">
+  <link rel="stylesheet" href="css/cleaning.css">
+  <title>JSPH Server Room Monitoring</title>
+</head>
+<body>
+
+  <!-- Header Section -->
+  <div class="topbar">
+  <div class="header-left">
+    <img src="img/server_icon.png" alt="Server Icon" style="height: 24px; margin-right: 10px;">
+    <span class="header-title">SRM</span>
+  </div>
+
+  <div class="topbar-right">
+    <div class="logoutBtn">
+    <a href="login.html" title="Logout">
+      <button class="icon-button">
+        <i class="fas fa-right-from-bracket"></i>
+      </button>
+    </a>
+  </div>
+  <div class="nav-menu">
+    <a href="monitoring.html">Monitoring</a>
+    <a href="report.html">Report</a>
+    <div class="dropdown">
+                      <button class="dropbtn">Management</button>
+                        <div class="dropdown-content">
+                          <a href="inventory.html">Inventory</a>
+                          <a href="cleaning.html">Cleaning</a>
+                        </div>
+                    </div>
+  </div>
+  </div>
+  </div>
+  <!-- Main Content -->
+  <main>
+    <div class="form-wrapper">
+  <div class="form-card">
+    <div class="form-title">
+      <h1>Cleaning Schedule</h1>
+    </div>    
+        <div><p id="currentSchedule" class="current-schedule"></p></div>
+    <div class="button-group">
+  <button onclick="toggleScheduleForm()">Set New Schedule</button>
+  <button onclick="clearSchedule()">Clear Schedule</button>
+</div>
+
+<!-- Schedule Form: initially hidden -->
+<div id="scheduleForm" style="display: none;">
+  <div><p>Schedule Settings</p></div>
+  <div>
+    <label for="frequency">Cleaning Frequency</label>
+    <select id="frequency" name="frequency" required>
+      <option value="">Select</option>
+      <option value="daily">Daily</option>
+      <option value="weekly">Weekly</option>
+      <option value="monthly">Monthly</option>
+      <option value="yearly">Yearly</option>
+      <option value="custom">Custom</option>
+    </select>
+  </div>
+
+      <!-- WEEKLY -->
+      <div id="weeklyGroup" class="input-group hidden">
+        <label for="weeklyDay">Select Day</label>
+        <select id="weeklyDay" name="weeklyDay">
+          <option value="monday">Monday</option>
+          <option value="tuesday">Tuesday</option>
+          <option value="wednesday">Wednesday</option>
+          <option value="thursday">Thursday</option>
+          <option value="friday">Friday</option>
+        </select>
+      </div>
+
+      <!-- MONTHLY -->
+      <div id="monthlyGroup" class="input-group hidden">
+        <label for="monthWeek">Week of the Month</label>
+        <select id="monthWeek">
+          <option value="first">First</option>
+          <option value="second">Second</option>
+          <option value="third">Third</option>
+          <option value="fourth">Fourth</option>
+          <option value="last">Last</option>
+        </select>
+
+        <label for="monthDay">Day</label>
+        <select id="monthDay">
+          <option value="monday">Monday</option>
+          <option value="tuesday">Tuesday</option>
+          <option value="wednesday">Wednesday</option>
+          <option value="thursday">Thursday</option>
+          <option value="friday">Friday</option>
+        </select>
+      </div>
+
+      <!-- YEARLY -->
+      <div id="yearlyGroup" class="input-group hidden">
+        <label for="yearlyMonth">Month</label>
+        <select id="yearlyMonth">
+          <option value="January">January</option>
+          <option value="February">February</option>
+          <option value="March">March</option>
+          <option value="April">April</option>
+          <option value="May">May</option>
+          <option value="June">June</option>
+          <option value="July">July</option>
+          <option value="August">August</option>
+          <option value="September">September</option>
+          <option value="October">October</option>
+          <option value="November">November</option>
+          <option value="December">December</option>
+        </select>
+
+        <label for="yearlyDay">Day</label>
+        <input type="number" id="yearlyDay" min="1" max="31" />
+      </div>
+
+      <!-- CUSTOM -->
+      <div id="customGroup" class="input-group hidden">
+        <label for="customDate">Pick a Date</label>
+        <input type="date" id="customDate" />
+      </div>
+
+      <div class="buttons">
+        <button type="button" onclick="saveSchedule()">Save Schedule</button>
+      </div>
+    </div><br>
+
+    <div id="calendar"></div>
+
+
+  </main>
+  <!-- Footer Section -->
+  <footer>
+    &copy; 2025 SRM JSPH | All Rights Reserved
+  </footer>
+
+  <script>
+// Hide all dynamic groups on initial load
+function displayCurrentSchedule() {
+  const schedule = JSON.parse(localStorage.getItem('cleaningSchedule'));
+  const display = document.getElementById('currentSchedule');
+
+  if (!schedule || !schedule.frequency) {
+    display.textContent = 'No cleaning schedule set yet.';
+    return;
+  }
+
+  let message = '📅 Cleaning is scheduled: ';
+  switch (schedule.frequency) {
+    case 'daily':
+      message += 'Every day';
+      break;
+    case 'weekly':
+      message += `Every ${capitalize(schedule.weeklyDay)}`;
+      break;
+    case 'monthly':
+      message += `${capitalize(schedule.monthWeek)} ${capitalize(schedule.monthDay)} of each month`;
+      break;
+    case 'yearly':
+      message += `Every ${capitalize(schedule.yearlyMonth)} ${schedule.yearlyDay}`;
+      break;
+    case 'custom':
+      message += `On ${schedule.customDate}`;
+      break;
+    default:
+      message += 'Schedule data unavailable.';
+  }
+
+  display.textContent = message;
+}
+
+function capitalize(str) {
+  if (!str) return '';
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('weeklyGroup').style.display = 'none';
+  document.getElementById('monthlyGroup').style.display = 'none';
+  document.getElementById('yearlyGroup').style.display = 'none';
+  document.getElementById('customGroup').style.display = 'none';
+  displayCurrentSchedule();
+  const savedSchedule = JSON.parse(localStorage.getItem('cleaningSchedule'));
+  if (savedSchedule && savedSchedule.frequency) {
+    frequency.value = savedSchedule.frequency;
+
+    // Prefill fields for saved schedule
+    if (savedSchedule.frequency === 'weekly') {
+      document.getElementById('weeklyDay').value = savedSchedule.weeklyDay;
+    } else if (savedSchedule.frequency === 'monthly') {
+      document.getElementById('monthWeek').value = savedSchedule.monthWeek;
+      document.getElementById('monthDay').value = savedSchedule.monthDay;
+    } else if (savedSchedule.frequency === 'yearly') {
+      document.getElementById('yearlyMonth').value = savedSchedule.yearlyMonth;
+      document.getElementById('yearlyDay').value = savedSchedule.yearlyDay;
+    } else if (savedSchedule.frequency === 'custom') {
+      document.getElementById('customDate').value = savedSchedule.customDate;
+    }
+
+    // Trigger the form and calendar logic
+    frequency.dispatchEvent(new Event('change'));
+  }
+
+});
+
+
+document.addEventListener('DOMContentLoaded', function () {
+  const calendarEl = document.getElementById('calendar');
+
+
+  // Initialize FullCalendar
+  const calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    height: 500,
+    selectable: false,
+    editable: false,
+    events: [],  // We'll add events dynamically below
+    datesSet: function(info) {
+    applySavedScheduleHighlight(info.start, info.end);
+  }
+  });
+
+  calendar.render();
+
+  function applySavedScheduleHighlight(viewStart, viewEnd) {
+  const schedule = JSON.parse(localStorage.getItem('cleaningSchedule'));
+  if (!schedule || !schedule.frequency) return;
+
+  const dayMap = {
+    sunday: 0, monday: 1, tuesday: 2, wednesday: 3,
+    thursday: 4, friday: 5, saturday: 6
+  };
+
+  function highlightDays(dates) {
+    calendar.removeAllEvents();
+    dates.forEach(date => {
+      calendar.addEvent({
+        start: date,
+        allDay: true,
+        display: 'background',
+        backgroundColor: '#0077cc'
+      });
+    });
+  }
+
+  let dates = [];
+
+  const start = new Date(viewStart);
+  const end = new Date(viewEnd);
+
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    const current = new Date(d);
+
+    if (schedule.frequency === 'daily') {
+      dates.push(new Date(current));
+    }
+
+    else if (schedule.frequency === 'weekly') {
+      if (current.getDay() === dayMap[schedule.weeklyDay]) {
+        dates.push(new Date(current));
+      }
+    }
+
+    else if (schedule.frequency === 'monthly') {
+      const m = current.getMonth();
+      const y = current.getFullYear();
+      const dayNum = dayMap[schedule.monthDay];
+
+      let matchDate = null;
+
+      if (schedule.monthWeek === 'last') {
+        let date = new Date(y, m + 1, 0); // last day of month
+        while (date.getDay() !== dayNum) {
+          date.setDate(date.getDate() - 1);
+        }
+        matchDate = date;
+      } else {
+        const nMap = { first: 1, second: 2, third: 3, fourth: 4 };
+        const n = nMap[schedule.monthWeek];
+        let count = 0;
+        let date = new Date(y, m, 1);
+        while (date.getMonth() === m) {
+          if (date.getDay() === dayNum) {
+            count++;
+            if (count === n) {
+              matchDate = date;
+              break;
+            }
+          }
+          date.setDate(date.getDate() + 1);
+        }
+      }
+
+      // Only push if it's in the view range
+      if (matchDate && matchDate >= start && matchDate <= end) {
+        dates.push(new Date(matchDate));
+      }
+    }
+
+    else if (schedule.frequency === 'yearly') {
+      const monthMap = {
+        January: 0, February: 1, March: 2, April: 3,
+        May: 4, June: 5, July: 6, August: 7,
+        September: 8, October: 9, November: 10, December: 11
+      };
+      const m = monthMap[schedule.yearlyMonth];
+      const dNum = parseInt(schedule.yearlyDay, 10);
+
+      const yearlyDate = new Date(current.getFullYear(), m, dNum);
+      if (yearlyDate >= start && yearlyDate <= end) {
+        dates.push(yearlyDate);
+      }
+    }
+
+    else if (schedule.frequency === 'custom') {
+      const customDate = new Date(schedule.customDate);
+      if (customDate >= start && customDate <= end) {
+        dates.push(customDate);
+      }
+    }
+  }
+
+  highlightDays(dates);
+}
+
+
+  // Your frequency dropdown and fields
+  const frequency = document.getElementById('frequency');
+  const weeklyGroup = document.getElementById('weeklyGroup');
+  const monthlyGroup = document.getElementById('monthlyGroup');
+  const yearlyGroup = document.getElementById('yearlyGroup');
+  const customGroup = document.getElementById('customGroup');
+
+  // Hide all frequency option groups on load
+  function hideAllGroups() {
+    weeklyGroup.style.display = 'none';
+    monthlyGroup.style.display = 'none';
+    yearlyGroup.style.display = 'none';
+    customGroup.style.display = 'none';
+  }
+
+  // Clear calendar events
+  function clearEvents() {
+    calendar.removeAllEvents();
+  }
+
+  // Highlight specific days by adding events
+  function highlightDays(dates) {
+    clearEvents();
+    dates.forEach(date => {
+      calendar.addEvent({
+        start: date,
+        allDay: true,
+        display: 'background',
+        backgroundColor: '#0077cc'
+      });
+    });
+  }
+
+  frequency.addEventListener('change', () => {
+    hideAllGroups();
+    clearEvents();
+
+    const value = frequency.value;
+
+    if (value === 'daily') {
+      // Highlight every day of the current month
+      const dates = [];
+      const start = new Date(calendar.getDate().getFullYear(), calendar.getDate().getMonth(), 1);
+      const end = new Date(calendar.getDate().getFullYear(), calendar.getDate().getMonth() + 1, 0);
+      for (let d = start; d <= end; d.setDate(d.getDate() + 1)) {
+        dates.push(new Date(d));
+      }
+      highlightDays(dates);
+
+    } else if (value === 'weekly') {
+      weeklyGroup.style.display = 'block';
+
+      // Highlight selected weekday for current month
+      function updateWeekly() {
+        clearEvents();
+        const selectedDay = document.getElementById('weeklyDay').value;
+        const dates = [];
+
+        const dayMap = {
+          sunday: 0, monday: 1, tuesday: 2, wednesday: 3,
+          thursday: 4, friday: 5, saturday: 6
+        };
+        const dayNum = dayMap[selectedDay];
+
+        const year = calendar.getDate().getFullYear();
+        const month = calendar.getDate().getMonth();
+
+        for (let d = 1; d <= 31; d++) {
+          const date = new Date(year, month, d);
+          if (date.getMonth() !== month) break;
+          if (date.getDay() === dayNum) {
+            dates.push(date);
+          }
+        }
+        highlightDays(dates);
+      }
+
+      document.getElementById('weeklyDay').addEventListener('change', updateWeekly);
+      updateWeekly(); // Initial call
+
+    } else if (value === 'monthly') {
+      monthlyGroup.style.display = 'block';
+
+      function updateMonthly() {
+        clearEvents();
+
+        const weekStr = document.getElementById('monthWeek').value; // first, second, third, fourth, last
+        const dayStr = document.getElementById('monthDay').value; // monday, tuesday, etc.
+
+        const dayMap = {
+          sunday: 0, monday: 1, tuesday: 2, wednesday: 3,
+          thursday: 4, friday: 5, saturday: 6
+        };
+        const dayNum = dayMap[dayStr];
+        const year = calendar.getDate().getFullYear();
+        const month = calendar.getDate().getMonth();
+
+        // Function to get date of nth weekday in month
+        function getNthWeekdayOfMonth(year, month, weekday, n) {
+          let date = new Date(year, month, 1);
+          let count = 0;
+          while (date.getMonth() === month) {
+            if (date.getDay() === weekday) {
+              count++;
+              if (count === n) return date;
+            }
+            date.setDate(date.getDate() + 1);
+          }
+          return null;
+        }
+
+        // Handle last week differently
+        let targetDate;
+        if (weekStr === 'last') {
+          // find last weekday of month
+          let date = new Date(year, month + 1, 0); // last day of month
+          while (date.getDay() !== dayNum) {
+            date.setDate(date.getDate() - 1);
+          }
+          targetDate = date;
+        } else {
+          const weekNumberMap = { first: 1, second: 2, third: 3, fourth: 4 };
+          const n = weekNumberMap[weekStr];
+          targetDate = getNthWeekdayOfMonth(year, month, dayNum, n);
+        }
+
+        if (targetDate) {
+          highlightDays([targetDate]);
+        }
+      }
+
+      document.getElementById('monthWeek').addEventListener('change', updateMonthly);
+      document.getElementById('monthDay').addEventListener('change', updateMonthly);
+      updateMonthly();
+
+    } else if (value === 'yearly') {
+      yearlyGroup.style.display = 'block';
+
+      function updateYearly() {
+        clearEvents();
+
+        const monthStr = document.getElementById('yearlyMonth').value;
+        const dayNum = parseInt(document.getElementById('yearlyDay').value, 10);
+
+        if (!dayNum || dayNum < 1 || dayNum > 31) return;
+
+        const monthMap = {
+          January: 0, February: 1, March: 2, April: 3,
+          May: 4, June: 5, July: 6, August: 7,
+          September: 8, October: 9, November: 10, December: 11
+        };
+
+        const year = calendar.getDate().getFullYear();
+
+        const targetDate = new Date(year, monthMap[monthStr], dayNum);
+        // Check if valid date in month
+        if (targetDate.getMonth() === monthMap[monthStr]) {
+          highlightDays([targetDate]);
+        }
+      }
+
+      document.getElementById('yearlyMonth').addEventListener('change', updateYearly);
+      document.getElementById('yearlyDay').addEventListener('input', updateYearly);
+      updateYearly();
+
+    } else if (value === 'custom') {
+      customGroup.style.display = 'block';
+
+      function updateCustom() {
+        clearEvents();
+
+        const dateStr = document.getElementById('customDate').value;
+        if (dateStr) {
+          const date = new Date(dateStr);
+          highlightDays([date]);
+        }
+      }
+
+      document.getElementById('customDate').addEventListener('change', updateCustom);
+      updateCustom();
+
+    } else {
+      clearEvents();
+    }
+  });
+
+});
+
+function saveSchedule() {
+  const frequency = document.getElementById('frequency').value;
+  let schedule = { frequency };
+
+  if (frequency === 'weekly') {
+    schedule.weeklyDay = document.getElementById('weeklyDay').value;
+  } else if (frequency === 'monthly') {
+    schedule.monthWeek = document.getElementById('monthWeek').value;
+    schedule.monthDay = document.getElementById('monthDay').value;
+  } else if (frequency === 'yearly') {
+    schedule.yearlyMonth = document.getElementById('yearlyMonth').value;
+    schedule.yearlyDay = document.getElementById('yearlyDay').value;
+  } else if (frequency === 'custom') {
+    schedule.customDate = document.getElementById('customDate').value;
+  }
+
+  localStorage.setItem('cleaningSchedule', JSON.stringify(schedule));
+
+  localStorage.removeItem('lastCleaningDoneDate');
+
+  // Update the current schedule text
+  displayCurrentSchedule();
+
+  // Hide the settings form
+  document.getElementById('scheduleForm').classList.remove('show');
+
+  alert('Schedule saved!');
+  location.reload();
+}
+
+  function toggleScheduleForm() {
+    const form = document.getElementById('scheduleForm');
+    form.style.display = (form.style.display === 'none') ? 'block' : 'none';
+  }
+
+  function clearSchedule() {
+  localStorage.removeItem('cleaningSchedule');
+
+  displayCurrentSchedule();
+  location.reload();
+}
+
+
+</script>
+
+    
+    <script>
+        function logout() {
+            alert("Logging out...");
+            window.location.href = "/login"; // Replace with your actual login path
+        }
+    </script>
+
+
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <title>Login</title>
+   <link rel="icon" href="img/server_icon.png" type="image/x-icon">
+   <link rel="stylesheet" href="css/login.css">
+</head>
+
+<body>
+ 
+
+  <!-- Modal container -->
+  <div class="login-modal">
+    <h1>Welcome Back Again!</h1>
+    
+
+    <form id="loginForm">
+      <label for="uname">Username</label><br>
+      <input type="text" id="uname" name="uname" autofocus required><br>
+      <label for="password">Password</label><br>
+      <input type="password" id="password" name="password" required><br><br>
+      <div style="text-align: center;">
+        <input type="submit" value="Login">
+      </div>
+    </form>
+  </div>
+  
+<script>
+  document.getElementById("loginForm").addEventListener("submit", function(e) {
+      e.preventDefault(); // Stop default form behavior
+      const username = document.getElementById("uname").value.trim();
+      if (username) {
+        localStorage.setItem("loggedInUser", username); // Save to localStorage
+        window.location.href = "monitoring.html"; // Redirect manually
+      } else {
+        alert("Please enter a username.");
+      }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Server Room Checklist</title>
+  <link rel="icon" href="img/server_icon.png" type="image/x-icon">
+  <link rel="stylesheet" href="css/checklist_table.css">
+</head>
+
+<body>
+<h1>JSPH SERVER ROOM CHECKLIST</h1>
+
+<div class="full-bar">
+ 
+<div class="date-controls">
+  <label for="monthSelect"><strong>Month:</strong></label>
+  <select id="monthSelect" name="month">
+    <option value="01">January</option>
+    <option value="02">February</option>
+    <option value="03">March</option>
+    <option value="04">April</option>
+    <option value="05">May</option>
+    <option value="06" selected>June</option>
+    <option value="07">July</option>
+    <option value="08">August</option>
+    <option value="09">September</option>
+    <option value="10">October</option>
+    <option value="11">November</option>
+    <option value="12">December</option>
+  </select>
+
+  <label for="yearSelect"><strong>Year:</strong></label>
+  <select id="yearSelect" name="year">
+    <option value="2024">2024</option>
+    <option value="2025" selected>2025</option>
+    <option value="2026">2026</option>
+  </select>
+</div>
+ <h1>JSPH SERVER ROOM CHECKLIST</h1>
+  <button id="exportBtn">Export</button>
+</div>
+
+
+<table border="1" id="statusTable">
+  <thead>
+    <tr>
+      <th rowspan="2">Date</th>
+      <th rowspan="2">Time</th>
+      <th rowspan="2">Temperature</th>
+      <th rowspan="2">Humidity</th>
+
+      <th colspan="1" id="airconHeader">
+        Aircon Units
+        <button class="add-column" onclick="addColumn('aircon')">+</button>
+      </th>
+      <th colspan="1" id="serverHeader">
+        Server HDD Health
+        <button class="add-column" onclick="addColumn('server')">+</button>
+      </th>
+      <th colspan="1" id="upsHeader">
+        UPS
+        <button class="add-column" onclick="addColumn('ups')">+</button>
+      </th>
+      <th colspan="1" id="networkHeader">
+        Network Devices
+        <button class="add-column" onclick="addColumn('network')">+</button>
+      </th>
+    </tr>
+    <tr id="unitHeaderRow">
+      <th class="aircon"><span ondblclick="renameHeader(this)" title="Double-click to rename">Unit 1</span><button class="remove-column" onclick="removeSpecificColumnByHeader(this.parentElement)">×</button></th>
+      <th class="server"><span ondblclick="renameHeader(this)" title="Double-click to rename">Server 1</span><button class="remove-column" onclick="removeSpecificColumnByHeader(this.parentElement)">×</button></th>
+      <th class="ups"><span ondblclick="renameHeader(this)" title="Double-click to rename">UPS 1</span><button class="remove-column" onclick="removeSpecificColumnByHeader(this.parentElement)">×</button></th>
+      <th class="network"><span ondblclick="renameHeader(this)" title="Double-click to rename">Device 1</span><button class="remove-column" onclick="removeSpecificColumnByHeader(this.parentElement)">×</button></th>
+    </tr>
+  </thead>
+  <tbody id="checklistBody">
+    <tr>
+      <td rowspan="2">01</td>
+      <td>AM</td>
+      <td><input type="text" /></td>
+      <td><input type="text" /></td>
+      <td class="aircon"><select><option>G</option><option>NG</option></select></td>
+      <td class="server"><select><option>Green</option><option>Amber</option></select></td>
+      <td class="ups"><select><option>G</option><option>NG</option></select></td>
+      <td class="network"><select><option>G</option><option>NG</option></select></td>
+    </tr>
+    <tr>
+      <td>PM</td>
+      <td><input type="text" /></td>
+      <td><input type="text" /></td>
+      <td class="aircon"><select><option>G</option><option>NG</option></select></td>
+      <td class="server"><select><option>Green</option><option>Amber</option></select></td>
+      <td class="ups"><select><option>G</option><option>NG</option></select></td>
+      <td class="network"><select><option>G</option><option>NG</option></select></td>
+    </tr>
+  </tbody>
+</table>
+
+<script>
+const columnCounts = {
+  aircon: 1,
+  server: 1,
+  ups: 1,
+  network: 1
+};
+
+function addColumn(category) {
+  const customLabel = prompt(`Enter name for new ${category} column:`)?.trim();
+  if (!customLabel) return;
+
+  const existingLabels = Array.from(document.querySelectorAll(`#unitHeaderRow th.${category} span`)).map(el => el.textContent);
+  if (existingLabels.includes(customLabel)) {
+    alert('A column with this name already exists.');
+    return;
+  }
+
+  columnCounts[category]++;
+  const count = columnCounts[category];
+  const header = document.getElementById(category + 'Header');
+  header.colSpan = count;
+
+  const newHeader = document.createElement('th');
+  newHeader.className = category;
+
+  const labelSpan = document.createElement('span');
+  labelSpan.textContent = customLabel;
+  labelSpan.ondblclick = () => renameHeader(labelSpan);
+  labelSpan.title = 'Double-click to rename';
+
+  const removeBtn = document.createElement('button');
+  removeBtn.textContent = '×';
+  removeBtn.className = 'remove-column';
+  removeBtn.title = `Remove ${customLabel}`;
+  removeBtn.onclick = () => removeSpecificColumnByHeader(newHeader);
+
+  newHeader.appendChild(labelSpan);
+  newHeader.appendChild(removeBtn);
+
+  const headerRow = document.getElementById('unitHeaderRow');
+  const categoryHeaders = headerRow.querySelectorAll(`th.${category}`);
+  const lastHeader = categoryHeaders[categoryHeaders.length - 1];
+  lastHeader ? lastHeader.after(newHeader) : headerRow.appendChild(newHeader);
+
+  const table = document.getElementById('statusTable');
+  for (let i = 2; i < table.rows.length; i++) {
+    const row = table.rows[i];
+    const newCell = document.createElement('td');
+    newCell.className = category;
+
+    let selectHTML = '<select>';
+    if (category === 'server') {
+      selectHTML += '<option value="Green">Green</option><option value="Amber">Amber</option>';
+    } else {
+      selectHTML += '<option value="G">G</option><option value="NG">NG</option>';
+    }
+    selectHTML += '</select>';
+
+    newCell.innerHTML = selectHTML;
+
+    const categoryCells = row.querySelectorAll(`td.${category}`);
+    const lastCell = categoryCells[categoryCells.length - 1];
+    lastCell ? lastCell.after(newCell) : row.appendChild(newCell);
+  }
+}
+
+function removeSpecificColumnByHeader(thElement) {
+  const category = thElement.className;
+
+  const headerRow = document.getElementById('unitHeaderRow');
+  const allCategoryHeaders = Array.from(headerRow.querySelectorAll(`th.${category}`));
+  const index = allCategoryHeaders.indexOf(thElement);
+  if (index === -1) return;
+
+  thElement.remove();
+
+  const table = document.getElementById('statusTable');
+  for (let i = 2; i < table.rows.length; i++) {
+    const row = table.rows[i];
+    const categoryCells = Array.from(row.querySelectorAll(`td.${category}`));
+    if (categoryCells[index]) categoryCells[index].remove();
+  }
+
+  columnCounts[category]--;
+  document.getElementById(category + 'Header').colSpan = columnCounts[category];
+}
+
+function renameHeader(spanElement) {
+  const oldName = spanElement.textContent;
+  const category = spanElement.closest('th').className;
+
+  const newName = prompt('Rename column:', oldName)?.trim();
+  if (!newName || newName === oldName) return;
+
+  const existingLabels = Array.from(document.querySelectorAll(`#unitHeaderRow th.${category} span`)).map(el => el.textContent);
+  if (existingLabels.includes(newName)) {
+    alert('A column with this name already exists.');
+    return;
+  }
+
+  spanElement.textContent = newName;
+  const th = spanElement.closest('th');
+  const removeBtn = th.querySelector('button');
+  if (removeBtn) removeBtn.title = `Remove ${newName}`;
+}
+</script>
+
+<script>
+function generateChecklistRows() {
+  const tbody = document.getElementById('checklistBody');
+  tbody.innerHTML = ''; // Clear any existing rows
+
+  for (let day = 1; day <= 31; day++) {
+    // AM row
+    const amRow = document.createElement('tr');
+    const dateCell = document.createElement('td');
+    dateCell.rowSpan = 2;
+    dateCell.textContent = String(day).padStart(2, '0');
+    amRow.appendChild(dateCell);
+
+    const timeCellAM = document.createElement('td');
+    timeCellAM.textContent = 'AM';
+    amRow.appendChild(timeCellAM);
+
+    amRow.appendChild(createInputCell()); // Temp
+    amRow.appendChild(createInputCell()); // Humidity
+
+    amRow.appendChild(createSelectCell('aircon'));
+    amRow.appendChild(createSelectCell('server'));
+    amRow.appendChild(createSelectCell('ups'));
+    amRow.appendChild(createSelectCell('network'));
+
+    // PM row
+    const pmRow = document.createElement('tr');
+    const timeCellPM = document.createElement('td');
+    timeCellPM.textContent = 'PM';
+    pmRow.appendChild(timeCellPM);
+
+    pmRow.appendChild(createInputCell()); // Temp
+    pmRow.appendChild(createInputCell()); // Humidity
+
+    pmRow.appendChild(createSelectCell('aircon'));
+    pmRow.appendChild(createSelectCell('server'));
+    pmRow.appendChild(createSelectCell('ups'));
+    pmRow.appendChild(createSelectCell('network'));
+
+    tbody.appendChild(amRow);
+    tbody.appendChild(pmRow);
+  }
+}
+
+// Helpers
+function createInputCell() {
+  const td = document.createElement('td');
+  const input = document.createElement('input');
+  input.type = 'text';
+  td.appendChild(input);
+  return td;
+}
+
+function createSelectCell(category) {
+  const td = document.createElement('td');
+  td.className = category;
+
+  const select = document.createElement('select');
+
+  if (category === 'server') {
+    select.innerHTML = '<option>Green</option><option>Amber</option>';
+  } else {
+    select.innerHTML = '<option>G</option><option>NG</option>';
+  }
+
+  td.appendChild(select);
+  return td;
+}
+
+window.onload = generateChecklistRows;
+</script>
+
+
+</body>
+</html>

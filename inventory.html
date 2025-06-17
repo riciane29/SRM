@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="icon" href="img/server_icon.png" type="image/x-icon">
+  <link rel="stylesheet" href="css/inventory.css">
+  <title>JSPH Server Room Monitoring</title>
+</head>
+<body>
+
+  <!-- Header Section -->
+  <div class="topbar">
+          <div class="header-left">
+            <img src="img/server_icon.png" alt="Server Icon" style="height: 24px; margin-right: 10px;">
+            <span class="header-title">SRM</span>
+          </div>
+
+          <div class="topbar-right">
+              <div class="logoutBtn">
+                <a href="login.html" title="Logout">
+                  <button class="icon-button">
+                    <i class="fas fa-right-from-bracket"></i>
+                  </button>
+                </a>
+              </div>
+              <div class="nav-menu">
+                  <a href="monitoring.html">Monitoring</a>
+                  <a href="report.html">Report</a>
+                  <div class="dropdown">
+                      <button class="dropbtn">Management</button>
+                        <div class="dropdown-content">
+                          <a href="inventory.html">Inventory</a>
+                          <a href="cleaning.html">Cleaning</a>
+                        </div>
+                    </div>
+              </div>
+          </div>
+  </div>
+  <!-- Main Content -->
+  <main>
+    <div class="form-wrapper">
+        <div class="form-card">
+        <div class="form-title">
+            <h1>Server Room Equipments</h1>
+        </div>    
+        <div class="form-page">
+                <div>
+                    <label for="equipment">Select Equipment Category</label>
+                    <select id="equipment" name="equipment" required>
+                        <option value="">Select</option>
+                        <option value="all">View All</option>
+                        <option value="aircon">Aircon Units</option>
+                        <option value="hdd">Server HDD Health</option>
+                        <option value="ups">UPS</option>
+                        <option value="network">Network Devices</option>
+                        <option value="sdwan">SD-WAN Devices</option>
+                    </select>
+                </div><br>
+                <div>Equipment List</div>
+                <div>
+                  <table id="list">
+                  <tbody id="equipmentTableBody">
+                   
+                  </tbody>
+                  </table>
+                </div>
+                <br>
+                <div class="buttons">
+                    <button type="button" onclick="confirmSave()">Save</button>
+                </div>
+          </div>
+        </div>
+      </div>
+  </main>
+    <!-- Main Content -->
+
+  <!-- Footer Section -->
+  <footer>
+    &copy; 2025 SRM JSPH | All Rights Reserved
+  </footer>
+  <!-- Footer Section -->
+
+  <script>
+let equipmentData = {};
+
+function loadData() {
+  const savedData = localStorage.getItem('equipmentData');
+  if (savedData) {
+    equipmentData = JSON.parse(savedData);
+  } else {
+    equipmentData = {
+      aircon: [],
+      hdd: [],
+      ups: [],
+      network: [],
+      sdwan: []
+    };
+  }
+}
+
+function saveData() {
+  localStorage.setItem('equipmentData', JSON.stringify(equipmentData));
+}
+
+const equipmentSelect = document.getElementById('equipment');
+const tableBody = document.getElementById('equipmentTableBody');
+
+equipmentSelect.addEventListener('change', () => {
+  renderTable(equipmentSelect.value);
+});
+
+function renderTable(category) {
+  tableBody.innerHTML = '';
+
+  if (!category) {
+    tableBody.innerHTML = `<tr><td colspan="2" class="empty-row">Please select a category to view the equipment list.</td></tr>`;
+    return;
+  }
+
+  if (category === 'all') {
+    let hasAnyData = false;
+
+    const headerRow = document.createElement('tr');
+    headerRow.innerHTML = `
+      <th>Name</th>
+      <th>Action</th>
+    `;
+    tableBody.appendChild(headerRow);
+
+    for (const key in equipmentData) {
+      const items = equipmentData[key];
+      if (items.length > 0) {
+        hasAnyData = true;
+
+        const categoryRow = document.createElement('tr');
+        categoryRow.innerHTML = `
+          <td colspan="2" class="category-label">
+            ${getCategoryName(key)}
+            <button class="icon-btn add-inline" onclick="addRow('${key}')">
+              <i class="fas fa-plus"></i>
+            </button>
+          </td>
+        `;
+        tableBody.appendChild(categoryRow);
+
+        items.forEach((item, index) => {
+          const row = createRow(item, key, index);
+          tableBody.appendChild(row);
+        });
+      }
+    }
+
+    if (!hasAnyData) {
+      tableBody.innerHTML = `<tr><td colspan="2" class="empty-row">No equipment found in any category.</td></tr>`;
+    }
+
+    return;
+  }
+
+  // Specific category
+  const headerRow = document.createElement('tr');
+  headerRow.innerHTML = `
+    <th>
+      Name
+      <button class="icon-btn" onclick="addRow()">
+        <i class="fas fa-plus"></i>
+      </button>
+    </th>
+    <th>Action</th>
+  `;
+  tableBody.appendChild(headerRow);
+
+  const items = equipmentData[category] || [];
+
+  if (items.length === 0) {
+    const empty = document.createElement('tr');
+    empty.innerHTML = `<td colspan="2" class="empty-row">No equipment added yet.</td>`;
+    tableBody.appendChild(empty);
+    return;
+  }
+
+  items.forEach((item, index) => {
+    const row = createRow(item, category, index);
+    tableBody.appendChild(row);
+  });
+}
+
+function getCategoryName(key) {
+  const names = {
+    aircon: "Aircon Units",
+    hdd: "Server HDD Health",
+    ups: "UPS",
+    network: "Network Devices",
+    sdwan: "SD-WAN Devices"
+  };
+  return names[key] || key;
+}
+
+function createRow(name, category, index) {
+  const tr = document.createElement('tr');
+
+  const nameTd = document.createElement('td');
+  nameTd.textContent = name;
+  tr.appendChild(nameTd); // ✅ no contentEditable
+
+  const actionTd = document.createElement('td');
+
+  // Edit
+  const editBtn = document.createElement('button');
+  editBtn.className = 'icon-btn';
+  editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+  editBtn.onclick = () => {
+    const newName = prompt('Edit equipment name:', name);
+    if (newName && newName.trim() !== '') {
+      equipmentData[category][index] = newName.trim();
+      saveData();
+      renderTable(equipmentSelect.value);
+    }
+  };
+  actionTd.appendChild(editBtn);
+
+  // Delete
+  const deleteBtn = document.createElement('button');
+  deleteBtn.className = 'icon-btn';
+  deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+  deleteBtn.onclick = () => {
+    if (confirm('Are you sure you want to delete this item?')) {
+      equipmentData[category].splice(index, 1);
+      saveData();
+      renderTable(equipmentSelect.value);
+    }
+  };
+  actionTd.appendChild(deleteBtn);
+
+  tr.appendChild(actionTd);
+  return tr;
+}
+
+function addRow(passedCategory) {
+  const category = passedCategory || equipmentSelect.value;
+
+  if (!category || category === '') {
+    alert('Please select an equipment category first.');
+    return;
+  }
+
+  const name = prompt('Enter new equipment name:');
+  if (name && name.trim() !== '') {
+    if (!equipmentData[category]) {
+      equipmentData[category] = [];
+    }
+
+     if (equipmentData[category].includes(name.trim())) {
+  alert('Equipment with this name already exists in the category.');
+  return;
+}
+
+    equipmentData[category].push(name.trim());
+    saveData();
+    renderTable(equipmentSelect.value);
+  }
+}
+
+function confirmSave() {
+  if (confirm("Are you sure you want to save the current equipment list?")) {
+    saveData();
+    alert("Equipment list has been saved.");
+  }
+}
+
+loadData();
+if (!equipmentSelect.value) {
+  equipmentSelect.value = 'aircon';  // or 'all' as your default
+}
+renderTable(equipmentSelect.value);
+
+</script>
+
+<script>
+    function logout() {
+      alert("Logging out...");
+        window.location.href = "/login"; // Replace with your actual login path
+        }
+</script>
+
+</body>
+</html>

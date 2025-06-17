@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="icon" href="img/server_icon.png" type="image/x-icon">
+  <link rel="stylesheet" href="css/monitoring.css">
+  <title>JSPH Server Room Monitoring</title>
+</head>
+<body>
+
+  <!-- Header Section -->
+  <div class="topbar">
+  <div class="header-left">
+    <img src="img/server_icon.png" alt="Server Icon" style="height: 24px; margin-right: 10px;">
+    <span class="header-title">SRM</span>
+  </div>
+
+  <div class="topbar-right">
+    <div class="logoutBtn">
+    <a href="login.html" title="Logout">
+      <button class="icon-button">
+        <i class="fas fa-right-from-bracket"></i>
+      </button>
+    </a>
+  </div>
+  <div class="nav-menu">
+    <a href="monitoring.html">Monitoring</a>
+    <a href="report.html">Report</a>
+    <div class="dropdown">
+                      <button class="dropbtn">Management</button>
+                        <div class="dropdown-content">
+                          <a href="inventory.html">Inventory</a>
+                          <a href="cleaning.html">Cleaning</a>
+                        </div>
+                    </div>
+  </div>
+  </div>
+  </div>
+  <!-- Main Content -->
+  <main>
+
+    <div class="form-wrapper">
+        <div class="form-card">
+            <div class="form-title">
+                <h1>Daily Monitoring Form</h1>
+            </div>
+        <form id="monitoringForm">
+            <div class="form-page" id="page1">
+                <!-- Cleaning Schedule Notice -->
+                    <div id="cleaningScheduleContainer" class="cleaning-schedule">
+                        <h2>📅Cleaning Schedule</h2>
+                        <p id="cleaning-date"></p>
+                        <div class="entry">
+                        <input type="hidden" id="vacuumStatus" name="vacuumStatus" value="not_done">
+                            <label>Vacuum</label>
+                        <button id="vacuumBtn" type="button" disabled>Mark as Done</button>
+                        </div>
+                        <div class="entry">
+                        <input type="hidden" id="ssStatus" name="ssStatus" value="not_done">
+                            <label>SS</label>
+                        <button id="ssBtn" type="button" disabled>Mark as Done</button>
+                        </div>
+                    </div>
+                
+                <div><p>Please input today's Server Room's condition:</p></div>
+                <div class="grid-2">
+                <div>
+                    <label for="date">Date</label>
+                    <input type="date" id="date" name="date" required/>
+                </div>
+
+                <div>
+                    <label for="timePeriod">Time Period</label>
+                    <select id="timePeriod" name="timePeriod" required>
+                        <option value="">Select</option>
+                        <option value="AM">AM</option>
+                        <option value="PM">PM</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="temp">Temperature</label>
+                    <input type="number" id="temp" name="temp" required/>
+                </div>
+
+                <div>
+                    <label for="humidity">Humidity</label>
+                    <input type="number" id="humidity" name="humidity" required/>
+                </div>
+
+                <!-- Example: Only container with category name -->
+                  <div class="category" id="category-aircon">
+                      <h2 class="category-name">Aircon Units</h2>
+  <!-- entries will be inserted here dynamically -->
+                  </div>
+
+                  <div class="category" id="category-hdd">
+                      <h2 class="category-name">Server HDD Health</h2>
+                  </div>
+
+                  <div class="category" id="category-ups">
+                      <h2 class="category-name">UPS</h2>
+                  </div>
+
+                  <div class="category" id="category-network">
+                      <h2 class="category-name">Network Device</h2>
+                  </div>
+
+                  <div class="category" id="category-sdwan">
+                      <h2 class="category-name">SD-WAN Devices</h2>
+                  </div>
+
+                </div>
+                <div class="nextBtn">
+                    <button type="button" onclick="nextPage()">Next</button>
+                </div>
+            </div>
+
+            <div class="form-page" id="page2" style="display: none;">
+            <div class="grid-2">
+                <div class="category">
+                    <h2 class="fireEx">Fire Extinguisher</h2>
+                    <div class="entry"><label>Gauge Status</label>
+                        <select name="gauge1"><option>G</option><option>NG</option></select>
+                    </div>
+                    <div class="entry">
+                        <label>IDEX Check</label>
+                        <button type="button" class="done-btn" onclick="openDateModal(this, 'extinguisher')">Done</button>
+                        <input type="hidden" id="idex1" name="idex1" />
+                    </div>
+                </div>
+                
+                <div class="category">
+                    <h2 class="fireSS">Fire Suppression System</h2>
+                    <div class="entry"><label>Gauge Status</label>
+                        <select name="gauge2"><option>G</option><option>NG</option></select>
+                    </div>
+                    <div class="entry">
+                        <label>IDEX Check</label>
+                        <button type="button" class="done-btn" onclick="openDateModal(this, 'suppression')">Done</button>
+                        <input type="hidden" id="idex2" name="idex2" />
+                    </div>
+                </div>
+
+                <div>
+                    <label for="time">Time Checked</label>
+                    <input type="time" id="time" name="time" required/>
+                </div>
+
+                <div>
+                    <label for="name">Checked by:</label>
+                    <input type="text" id="name" name="name" readonly />
+                </div>
+            </div>
+                <div>
+                    <label for="remarks">Remarks</label>
+                    <input type="text" id="remarks" name="remarks"/>
+                </div>
+
+                <div class="buttons">
+                    <button type="button" onclick="prevPage()">Back</button>
+                    <button type="submit">Submit</button>
+                </div>
+            </div>
+
+            <div id="dateModal" class="modal">
+              <div class="modal-content">
+                <h3>Select Date for IDEX Check</h3>
+                    <input type="date" id="modalDateInput" max="<?= new Date().toISOString().split('T')[0] ?>">
+                    <div class="modal-actions">
+                      <button onclick="submitDate()">Save</button>
+                      <button onclick="closeModal()">Cancel</button>
+                  </div>
+              </div>
+            </div>
+
+        </form>
+        </div>
+    </div>
+
+  
+  </main>
+
+  <!-- Footer Section -->
+  <footer>
+    &copy; 2025 SRM JSPH | All Rights Reserved
+  </footer>
+  <script>
+window.addEventListener("DOMContentLoaded", () => {
+    const user = localStorage.getItem("loggedInUser");
+    if (user) {
+      document.getElementById("name").value = user;
+    }
+  });
+
+let currentButton = null;
+  let currentSection = '';
+
+  function openDateModal(button, section) {
+    currentButton = button;
+    currentSection = section;
+
+     let savedDate = '';
+  if (section === 'extinguisher') {
+    savedDate = document.getElementById('idex1').value || '';
+  } else if (section === 'suppression') {
+    savedDate = document.getElementById('idex2').value || '';
+  }
+
+    document.getElementById("modalDateInput").value = savedDate;
+    document.getElementById("dateModal").style.display = "flex";
+  }
+
+  function closeModal() {
+    document.getElementById("dateModal").style.display = "none";
+  }
+
+  function submitDate() {
+    const dateValue = document.getElementById("modalDateInput").value;
+    if (!dateValue) {
+      alert("Please select a date.");
+      return;
+    }
+
+    const checkmark = document.createElement("span");
+    checkmark.className = "tooltip";
+    checkmark.textContent = "✔️";
+    checkmark.setAttribute("data-tooltip", `${capitalize(currentSection)}: ${dateValue}`);
+    currentButton.replaceWith(checkmark);
+    const monitoringData = JSON.parse(localStorage.getItem("monitoringData")) || {};
+    closeModal();
+
+    if (currentSection === 'extinguisher') {
+    document.getElementById('idex1').value = dateValue;
+  } else if (currentSection === 'suppression') {
+    document.getElementById('idex2').value = dateValue;
+  }
+  }
+
+  function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+let isCleaningDay = false;
+let vacuumDone = false;
+let ssDone = false;
+
+document.addEventListener('DOMContentLoaded', function () {
+  const schedule = JSON.parse(localStorage.getItem('cleaningSchedule'));
+  const display = document.getElementById('cleaning-date');
+  const lastCleaningDoneDate = localStorage.getItem('lastCleaningDoneDate');
+  const today = new Date();
+  const todayStr = today.toISOString().split('T')[0];
+  
+
+  if (!schedule || !schedule.frequency) {
+    display.textContent = 'No cleaning schedule set.';
+    return;
+  }
+
+  function capitalize(str) {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  function formatDateToMonthDDYYYY(date) {
+    const options = { month: 'long' };
+    const month = new Intl.DateTimeFormat('en-US', options).format(date);
+    const day = String(date.getDate()).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${month}-${day}-${year}`;
+  }
+
+  function getMonthNumber(monthName) {
+  const months = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  return months.findIndex(m => m.toLowerCase() === monthName.toLowerCase()) + 1;
+}
+
+
+  function getNextWeekdayDate(weekdayName) {
+    const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const todayIndex = today.getDay();
+    const targetIndex = weekdays.findIndex(day => day.toLowerCase() === weekdayName.toLowerCase());
+    let diff = (targetIndex - todayIndex + 7) % 7;
+    if (diff === 0) diff = 7; // move to next week if today
+    const nextDate = new Date(today);
+    nextDate.setDate(today.getDate() + diff);
+    return nextDate;
+  }
+
+  function skipHolidaysForWeekly(date, weekdayName) {
+  const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const targetIndex = weekdays.findIndex(day => day.toLowerCase() === weekdayName.toLowerCase());
+  let newDate = new Date(date);
+
+  // While holiday, move forward exactly 7 days (next week same weekday)
+  while (isHoliday(newDate)) {
+    newDate.setDate(newDate.getDate() + 7);
+  }
+  return newDate;
+}
+
+
+  function getNextMonthlyDate(week, dayName) {
+  const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const targetDay = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
+    .findIndex(d => d.toLowerCase() === dayName.toLowerCase());
+
+  const dates = [];
+
+  for (let d = new Date(firstDayOfMonth); d.getMonth() === today.getMonth(); d.setDate(d.getDate() + 1)) {
+    if (d.getDay() === targetDay) dates.push(new Date(d));
+  }
+
+  const wIndex = weekToIndex(week);
+const weekIndex = wIndex === 'last' ? dates.length - 1 : wIndex - 1;
+
+  const targetDate = dates[weekIndex];
+  if (!targetDate) return null; // If something went wrong
+
+  // If targetDate already passed, get from next month
+  if (targetDate < today) {
+    const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+    return getNextMonthlyDateFromBase(nextMonth, week, dayName);
+  }
+
+  return targetDate;
+}
+
+
+  function getNextMonthlyDateFromBase(baseDate, week, dayName) {
+  const firstDay = new Date(baseDate.getFullYear(), baseDate.getMonth(), 1);
+  const targetDay = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
+    .findIndex(d => d.toLowerCase() === dayName.toLowerCase());
+
+  const dates = [];
+  for (let d = new Date(firstDay); d.getMonth() === baseDate.getMonth(); d.setDate(d.getDate() + 1)) {
+    if (d.getDay() === targetDay) {
+      dates.push(new Date(d));
+    }
+  }
+
+  const wIndex = weekToIndex(week);
+  const weekIndex = wIndex === 'last' ? dates.length - 1 : wIndex - 1;
+
+  if (weekIndex < 0 || weekIndex >= dates.length) {
+    return null;
+  }
+  return dates[weekIndex];
+}
+  const holidays = ['06-12', '06-19' /* add your holiday dates here */];
+
+function isHoliday(date) {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const mmdd = `${month}-${day}`;
+  console.log('Checking holiday for:', mmdd);
+  return holidays.includes(mmdd);
+}
+
+function skipHolidaysGeneric(date, stepDays = 1) {
+  let newDate = new Date(date);
+  while (isHoliday(newDate)) {
+    newDate.setDate(newDate.getDate() + stepDays);
+  }
+  return newDate;
+}
+
+function weekToIndex(week) {
+  if (week === 'last') return 'last'; // special case handled separately
+  const map = {
+    'first': 1,
+    'second': 2,
+    'third': 3,
+    'fourth': 4
+  };
+  if (typeof week === 'string') {
+    const w = week.toLowerCase();
+    if (map[w]) return map[w];
+  }
+  const parsed = parseInt(week);
+  if (!isNaN(parsed)) return parsed;
+  return null;
+}
+
+
+function skipHolidaysForMonthly(date, week, dayName) {
+  let newDate = new Date(date);
+  let attempts = 0;
+  while (isHoliday(newDate)) {
+    const nextMonth = new Date(newDate.getFullYear(), newDate.getMonth() + 1, 1);
+    newDate = getNextMonthlyDateFromBase(nextMonth, week, dayName);
+    if (!newDate) {
+      break;
+    }
+    attempts++;
+    if (attempts > 12) { // safety to avoid infinite loop
+      break;
+    }
+  }
+  return newDate;
+}
+
+
+
+console.log('Schedule:', schedule);
+console.log('Yearly Month:', schedule.yearlyMonth);
+console.log('Yearly Day:', schedule.yearlyDay);
+
+  function getNextCleaningDate() {
+  let nextDate;
+
+  switch (schedule.frequency) {
+    case 'daily':
+      nextDate = new Date(today);
+      nextDate.setDate(today.getDate() + 1);
+      nextDate = skipHolidaysGeneric(nextDate);  // Optional: apply to daily too
+      break;
+
+    case 'weekly':
+      nextDate = getNextWeekdayDate(schedule.weeklyDay);
+      nextDate = skipHolidaysForWeekly(nextDate, schedule.weeklyDay);
+      break;
+
+    case 'monthly':
+      nextDate = getNextMonthlyDate(schedule.monthWeek, schedule.monthDay);
+      if (nextDate) nextDate = skipHolidaysForMonthly(nextDate, schedule.monthWeek, schedule.monthDay);
+      break;
+
+    case 'yearly':
+      const yearlyMonth = getMonthNumber(schedule.yearlyMonth);
+      const yearlyDay = Number(schedule.yearlyDay);
+      let year = today.getFullYear();
+      nextDate = new Date(year, yearlyMonth - 1, yearlyDay);
+      if (nextDate < today) {
+        nextDate = new Date(year + 1, yearlyMonth - 1, yearlyDay);
+      }
+      nextDate = skipHolidaysGeneric(nextDate);
+      break;
+
+    case 'custom':
+      nextDate = new Date(schedule.customDate);
+      if (nextDate <= today) {
+        return null; // Past custom date, no next date
+      }
+      nextDate = skipHolidaysGeneric(nextDate);
+      break;
+
+    default:
+      return null;
+  }
+
+  return nextDate;
+}
+
+
+
+  let cleaningToday = false;
+
+  switch (schedule.frequency) {
+    case 'daily':
+      cleaningToday = true;
+      break;
+
+    case 'weekly':
+      cleaningToday = schedule.weeklyDay.toLowerCase() === today.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+      break;
+
+    case 'monthly':
+  console.log('Schedule:', schedule);
+  console.log('Month Week:', schedule.monthWeek);
+  console.log('Month Day:', schedule.monthDay);
+      const weekDate = getNextMonthlyDate(schedule.monthWeek, schedule.monthDay);
+      cleaningToday = weekDate && weekDate.toDateString() === today.toDateString();
+      break;
+
+    case 'yearly':
+        const month = getMonthNumber(schedule.yearlyMonth);
+        const day = Number(schedule.yearlyDay);
+        cleaningToday = (today.getMonth() + 1 === month && today.getDate() === day);
+        break;
+
+    case 'custom':
+      cleaningToday = schedule.customDate === todayStr;
+      break;
+  }
+if (isHoliday(today)) {
+  isCleaningDay = false;
+  cleaningToday = false;
+}
+  // Prevent doing cleaning twice in one day
+  if (cleaningToday && lastCleaningDoneDate !== todayStr) {
+    isCleaningDay = true;
+  }
+  localStorage.setItem('isCleaningDay', JSON.stringify(isCleaningDay));
+
+
+  // Display cleaning schedule message
+  let nextDateToShow;
+  if (isCleaningDay) {
+    nextDateToShow = today;
+  } else {
+    nextDateToShow = getNextCleaningDate();
+  }
+
+  let message = 'Next Scheduled Cleaning: ';
+  if (nextDateToShow) {
+    message += formatDateToMonthDDYYYY(nextDateToShow);
+  } else {
+    message += 'None';
+  }
+  display.textContent = message;
+
+  // Handle button states
+  if (isCleaningDay) {
+    document.getElementById('vacuumBtn').disabled = false;
+    document.getElementById('ssBtn').disabled = false;
+
+    document.getElementById('vacuumBtn').addEventListener('click', function () {
+      vacuumDone = true;
+      this.disabled = true;
+      this.textContent = 'Done';
+      document.getElementById('vacuumStatus').value = 'done';
+      localStorage.setItem('vacuumStatus', 'done'); 
+    });
+
+    document.getElementById('ssBtn').addEventListener('click', function () {
+      ssDone = true;
+      this.disabled = true;
+      this.textContent = 'Done';
+      document.getElementById('ssStatus').value = 'done';
+      localStorage.setItem('ssStatus', 'done');
+    });
+  }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+  const form = document.getElementById('monitoringForm');
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault(); // Always prevent first
+
+    const isCleaningDay = JSON.parse(localStorage.getItem('isCleaningDay')) || false;
+    const vacuumDone = localStorage.getItem('vacuumStatus') === 'done';
+    const ssDone = localStorage.getItem('ssStatus') === 'done';
+
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    if (isCleaningDay) {
+      if (!vacuumDone || !ssDone) {
+        alert("Please mark both Vacuum and SS tasks as done before submitting.");
+        return; // Stop here
+      }
+      localStorage.setItem('lastCleaningDoneDate', todayStr);
+    }
+
+    if (!confirm("Are you sure you want to submit the form?")) {
+      return;
+    }
+    const formData = new FormData(form);
+const entry = {};
+formData.forEach((value, key) => {
+  entry[key] = value;
+});
+
+const date = entry.date;
+const timePeriod = entry.timePeriod;
+
+let monitoringData = JSON.parse(localStorage.getItem('monitoringData')) || {};
+
+if (!monitoringData[date]) {
+  monitoringData[date] = {};
+}
+
+monitoringData[date][timePeriod] = entry;
+console.log("Entry just before saving:", entry);
+localStorage.setItem('monitoringData', JSON.stringify(monitoringData));
+
+    // ✅ Proceed to save data here
+    alert("Form successfully saved!");
+    form.reset(); // optional
+localStorage.removeItem('vacuumStatus');
+localStorage.removeItem('ssStatus');
+localStorage.removeItem('isCleaningDay');
+
+location.reload();
+  });
+});
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Load equipment data or default empty arrays
+  const equipmentData = JSON.parse(localStorage.getItem('equipmentData')) || {
+    aircon: [],
+    hdd: [],
+    ups: [],
+    network: [],
+    sdwan: []
+  };
+
+  const categoryIds = {
+    aircon: 'category-aircon',
+    hdd: 'category-hdd',
+    ups: 'category-ups',
+    network: 'category-network',
+    sdwan: 'category-sdwan'
+  };
+
+  Object.entries(equipmentData).forEach(([categoryKey, items]) => {
+    const container = document.getElementById(categoryIds[categoryKey]);
+    if (!container) return;
+
+    // Clear previous entries if any (optional)
+    container.querySelectorAll('.entry').forEach(e => e.remove());
+
+    items.forEach((itemName, index) => {
+      const entryDiv = document.createElement('div');
+      entryDiv.classList.add('entry');
+
+      // Label with equipment name
+      const label = document.createElement('label');
+      label.textContent = itemName;
+
+      // Create select dropdown
+      const select = document.createElement('select');
+      select.name = `${categoryKey}${index + 1}`; // ✅ Proper, stable name
+
+      // Options differ for HDD vs others
+      if (categoryKey === 'hdd') {
+        select.innerHTML = `<option value="Green">Green</option><option value="Amber">Amber</option>`;
+      } else {
+        select.innerHTML = `<option value="G">G</option><option value="NG">NG</option>`;
+      }
+
+      // Append label and select to entry div
+      entryDiv.appendChild(label);
+      entryDiv.appendChild(select);
+
+      // Append entry to category container
+      container.appendChild(entryDiv);
+    });
+  });
+});
+
+
+</script>
+
+
+
+
+    
+    <script>
+        function logout() {
+            alert("Logging out...");
+            window.location.href = "/login"; // Replace with your actual login path
+        }
+    </script>
+
+    <script>
+        function nextPage() {
+            document.getElementById('page1').style.display = 'none';
+            document.getElementById('page2').style.display = 'block';
+            }
+        function prevPage() {
+            document.getElementById('page2').style.display = 'none';
+            document.getElementById('page1').style.display = 'block';
+        }
+    </script>
+ 
+
+
+</body>
+</html>
