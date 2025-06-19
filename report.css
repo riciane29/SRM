@@ -1,0 +1,215 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+html, body {
+  height: 100%;
+}
+
+
+body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Top Navigation */
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100px; /* or whatever height you like */
+  background-color: #1e1e2f;
+  color: white;
+  padding: 0 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  z-index: 1000;
+
+}
+
+
+/* Left side: logo + title */
+.header-left {
+  display: flex;
+  align-items: center;
+  height: 85%;
+  padding-top: 16px;
+}
+
+.header-title {
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-size: xx-large;
+  font-weight: bold;
+}
+
+/* Right side container */
+.topbar-right {
+  position: relative;
+  height: 100%;
+  width: auto;
+}
+
+/* Absolute top-right */
+.logoutBtn {
+  position: absolute;
+  top: 8px;
+  right: 0;
+}
+
+/* Absolute bottom-right */
+.nav-menu {
+  position: absolute;
+  bottom: 8px;
+  right: 0;
+  display: flex;
+  gap: 10px;
+}
+
+.nav-menu a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  padding: 8px 12px;
+  border-radius: 5px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.nav-menu a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+.icon-button {
+  background: transparent;
+  border: none;
+  padding: 4px;
+  font-size: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.icon-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.dropbtn {
+  background-color:#1e1e2f;
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 16px;
+  padding: 8px 12px;
+  border-radius: 5px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  border-radius: 5px;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 120px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown-content a:hover {background-color:#ccc}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.dropdown:hover .dropbtn {
+  background-color: white;
+  color: black
+}
+
+main {
+  flex: 1;
+  padding: 80px 20px 20px; /* adjust top padding for both fixed bars */
+}
+
+h2 {
+  text-align: center;
+}
+#statusTable th, #statusTable td {
+  padding: 4px 6px;
+  white-space: nowrap;
+  text-align: center;
+  min-width: 70px;
+}
+
+
+
+    button {
+        background-color: #1e1e2f;
+        padding: 0.5rem 1rem;
+        color:#ccc;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+    }
+
+
+    footer {
+      background-color: #1e1e2f;
+      color: white;
+      padding: 10px;
+      text-align: center;
+      margin-top: 50px;
+    }
+
+    .icon-button {
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: white;
+    padding: 8px;
+  }
+
+  .icon-button:hover {
+    color:cadetblue; /* optional hover effect */
+  }
+
+  @media (max-width: 600px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .header-left, .header-right {
+    flex: 1 1 100%;
+    justify-content: center;
+    margin-top: 0.5rem;
+  }
+
+  .nav-menu {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

@@ -1,0 +1,65 @@
+html, body {
+   text-align:center;
+   background-image: url('../img/server.jpg');
+   background-size:cover;
+   background-repeat: no-repeat;
+   background-position: center;
+   background-attachment: fixed;
+   height: 100%;
+   overflow: hidden; /* This disables scrolling */
+
+   display: flex;
+   flex-direction: column;
+   justify-content: center;
+   align-items: center;
+   min-height: 100vh;
+
+} 
+
+
+/* Centered modal-style form box */
+.login-modal {
+  background-color: rgba(255, 255, 255, 0.5); /* 0.0 = fully transparent, 1.0 = fully opaque */
+  padding: 30px;
+  border-radius: 15px;
+  width: 320px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+  text-align: center;
+  font-family:Verdana, Geneva, Tahoma, sans-serif;
+}
+
+
+.login-modal h1{
+  text-align: center;
+  font-family:Verdana, Geneva, Tahoma, sans-serif;
+}
+
+/* Optional: style inputs for better look */
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  padding: 8px;
+  margin: 6px 0;
+  box-sizing: border-box;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+
+  input[type="submit"] {
+    display: block;
+    margin: 20px auto; /* auto left and right centers it */
+    border-radius: 40px; /* Adjust the value to make it more or less rounded */
+    background-color: #4CAF50; /* Green background */
+    color: white; /* White text color */
+    padding: 10px 20px; /* Adjust padding to make the button bigger or smaller */
+    border: none; /* Remove border */
+    font-size: 16px; /* Increase font size */
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    cursor: pointer; /* Change cursor to pointer when hovering */
+    transition: background-color 0.3s ease; /* Smooth background color transition */
+  }
+
+  input[type="submit"]:hover {
+    background-color: #45a049; /* Darker green when hovered */
+  }

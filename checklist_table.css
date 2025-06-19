@@ -1,0 +1,168 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color:darkcyan;
+  padding: 45px;
+}
+
+h1 {
+  text-align: center;
+}
+
+/*#monthSelect,
+#yearSelect {
+  width: 120px;       
+  font-size: 14px;    
+  border-radius: 40px;
+}*/
+
+.export {
+  padding: 2px 6px;
+  margin-left: 4px;
+  font-size: 17px;
+  cursor: pointer;
+  border: none;
+  background-color: #007BFF;
+  color: white;
+  border-radius: 4px;
+  align-items: end;
+}
+
+/*.table-wrapper {
+  max-height: 500px;
+  overflow-y: auto;
+}  just in case*/
+
+table {
+  width: 100%;
+  border: none;
+  border-collapse:collapse;
+  background-color:#f0f0f0;
+  margin-top: 20px;
+  border-radius: 20px;
+  overflow:hidden;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 1);
+
+}
+
+table input[type="text"] {
+  width: 80px;         /* or any size you prefer */
+  font-size: 14px;
+  padding: 4px 6px;
+  box-sizing: border-box;
+}
+
+
+table select {
+  width: 80px;
+  font-size: 15px;
+  padding: 3px;
+  text-align: center;
+  border-radius: 8px;
+}
+
+th, td {
+  padding: 8px;
+  text-align: center;
+  border: 0.5px solid #ccc;
+  padding: 4px 6px;       /* reduce cell padding */
+  font-size: 15px;
+}
+
+thead th {
+  background-color:black;
+  font-weight: bold;
+  color:#f0f0f0;
+}
+
+/* Category Columns */
+th.aircon, th.server, 
+th.ups, th.network {
+  background-color:slategray;  
+  color:black;
+}
+
+
+select, input[type="text"] {
+  width: 100%;
+  padding: 4px;
+  box-sizing: border-box;
+}
+
+
+.add-column {
+  padding: 2px 6px;
+  margin-left: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  background-color: #007BFF;
+  color: white;
+  border-radius: 4px;
+}
+
+.add-column:hover {
+  background-color: #0056b3;
+}
+
+.remove-column {
+  background-color: #dc3545;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  margin-left: 6px;
+  font-weight: bold;
+}
+
+.remove-column:hover {
+  background-color: #c82333;
+}
+
+.full-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  margin-bottom:auto;
+}
+
+.date-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;              /* space between items */
+  background-color:#f0f0f0;
+  padding: 10px 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.date-controls label {
+  font-weight: bold;
+  color:black;
+}
+
+.date-controls select {
+  width: 120px;
+  padding: 6px 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 40px;
+}
+
+#exportBtn {
+  padding: 6px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 17px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+#exportBtn:hover {
+  background-color: #0056b3;
+}
